@@ -21,38 +21,43 @@ export default async function handler(req, res) {
   // Admin login
   if (username === ADMIN_USER) {
     if (password_hash !== ADMIN_HASH) return res.status(401).json({ error: 'Wrong password!' });
-
-    // Create session
-    const { data: session } = await supabase
-      .from('sessions')
-      .insert({ username: ADMIN_USER })
-      .select()
-      .single();
-
+    const { data: session } = await supabase.from('sessions').insert({ username: ADMIN_USER }).select().single();
+    // Get admin profile from DB if exists
+    const { data: adminProfile } = await supabase.from('users').select('about, pfp').eq('username', ADMIN_USER).single();
     return res.status(200).json({
       success: true,
-      user: { username: ADMIN_USER, isAdmin: true, joined: 'Since the beginning of time 🌌', about: 'The Meme Curator. Keeper of the Museum. 🐸', pfp: '' },
+      user: { 
+        username: ADMIN_USER, isAdmin: true, 
+        joined: '🌌 Since the beginning of time', 
+        about: adminProfile?.about || 'The Meme Curator. Keeper of the Museum. 🐸', 
+        pfp: adminProfile?.pfp || '' 
+      },
       sessionId: session?.id
     });
   }
 
-  // Regular user login
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('username', username)
-    .single();
+  // Check ban first
+  const { data: ban } = await supabase.from('bans').select('*').eq('username', username).single();
+  if (ban) {
+    if (!ban.expires_at || new Date(ban.expires_at) > new Date()) {
+      const expiry = ban.expires_at 
+        ? `until ${new Date(ban.expires_at).toLocaleDateString()}` 
+        : 'permanently';
+      return res.status(403).json({ 
+        error: `🚫 You are banned ${expiry}. Reason: ${ban.reason || 'No reason given'}` 
+      });
+    } else {
+      // Ban expired, clean it up
+      await supabase.from('bans').delete().eq('username', username);
+    }
+  }
 
+  // Regular user login
+  const { data: user, error } = await supabase.from('users').select('*').eq('username', username).single();
   if (error || !user) return res.status(401).json({ error: 'Username not found!' });
   if (user.password_hash !== password_hash) return res.status(401).json({ error: 'Wrong password!' });
 
-  // Create session
-  const { data: session } = await supabase
-    .from('sessions')
-    .insert({ username })
-    .select()
-    .single();
-
+  const { data: session } = await supabase.from('sessions').insert({ username }).select().single();
   return res.status(200).json({
     success: true,
     user: { username: user.username, isAdmin: false, joined: user.joined, about: user.about || '', pfp: user.pfp || '' },

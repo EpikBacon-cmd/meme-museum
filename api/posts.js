@@ -19,7 +19,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // GET - fetch all posts
   if (req.method === 'GET') {
     const { data, error } = await supabase
       .from('posts')
@@ -29,16 +28,15 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   }
 
-  // POST - create new post (admin only)
   if (req.method === 'POST') {
-    const { title, body, img_url, sessionId } = req.body;
+    const { title, body, img_url, sessionId, category } = req.body;
     const isAdmin = await verifyAdmin(sessionId);
     if (!isAdmin) return res.status(403).json({ error: 'Unauthorized' });
     if (!title || !body) return res.status(400).json({ error: 'Missing fields' });
 
     const { data, error } = await supabase
       .from('posts')
-      .insert({ title, body, img_url: img_url || '', author: ADMIN_USER })
+      .insert({ title, body, img_url: img_url || '', author: ADMIN_USER, category: category || 'Meme News' })
       .select()
       .single();
 
@@ -46,12 +44,10 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   }
 
-  // DELETE - delete a post (admin only)
   if (req.method === 'DELETE') {
     const { id, sessionId } = req.body;
     const isAdmin = await verifyAdmin(sessionId);
     if (!isAdmin) return res.status(403).json({ error: 'Unauthorized' });
-
     const { error } = await supabase.from('posts').delete().eq('id', id);
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ success: true });
