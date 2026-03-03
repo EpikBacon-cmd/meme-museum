@@ -1,8 +1,0 @@
-{
-  "name": "meme-museum",
-  "version": "1.0.0",
-  "description": "The Meme Museum - Online",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
-  }
-}
