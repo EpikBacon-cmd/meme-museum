@@ -410,7 +410,7 @@ async function doRegister() {
   if (!username||!pass||!pass2) { err.textContent='⚠️ Fill in all fields!'; return; }
   if (username.length<3)  { err.textContent='⚠️ Username needs 3+ chars!'; return; }
   if (pass.length<6)  { err.textContent='⚠️ Password needs 6+ chars!'; return; }
-  if (pass!==pass2)   { err.textContent='❌ Passwords don't match!'; return; }
+  if (pass!==pass2)   { err.textContent='❌ Passwords don\'t match!'; return; }
   err.textContent='⏳ Creating account...';
   const hash = await sha256(pass);
   const res  = await api('register','POST',{username, password_hash: hash});
@@ -612,6 +612,23 @@ document.addEventListener('keydown', e=>{
     if (document.getElementById('form-login').style.display!=='none') doLogin();
   }
 });
+
+// Expose all functions globally so onclick handlers can find them
+window.showPage = showPage;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.switchTab = switchTab;
+window.doLogin = doLogin;
+window.doRegister = doRegister;
+window.doLogout = doLogout;
+window.submitPost = submitPost;
+window.deletePost = deletePost;
+window.previewPostImg = previewPostImg;
+window.saveProfile = saveProfile;
+window.handlePfpUpload = handlePfpUpload;
+window.deleteMember = deleteMember;
+window.showUserPopup = showUserPopup;
+
 </script>
 </body>
 </html>
