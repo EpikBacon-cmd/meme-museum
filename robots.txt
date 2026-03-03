@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://meme-museum-epikbacon-cmds-projects.vercel.app/sitemap.xml
