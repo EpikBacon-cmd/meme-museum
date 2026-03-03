@@ -433,7 +433,7 @@ async function doLogout() {
 }
 
 // Restore session on page load
-(function restoreSession() {
+document.addEventListener('DOMContentLoaded', function() {
   try {
     const saved = JSON.parse(sessionStorage.getItem('session'));
     if (saved && saved.user && saved.sessionId) {
@@ -442,7 +442,7 @@ async function doLogout() {
       updateNavUI();
     }
   } catch(e) {}
-})();
+});
 
 // ── NEWS ───────────────────────────────
 async function loadNews() {
