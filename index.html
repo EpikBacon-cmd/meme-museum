@@ -506,11 +506,15 @@ async function loadMembers() {
     { username: ADMIN_USER, isAdmin:true, joined:'Since the beginning of time 🌌', about:'The Meme Curator. Keeper of the Museum. 🐸', pfp:'' },
     ...(Array.isArray(users)?users:[])
   ];
+  // Store members globally so we can look them up by username on click
+  window._members = {};
+  allMembers.forEach(m => { window._members[m.username] = m; });
+
   grid.innerHTML = allMembers.map(m=>{
     const av = (m.pfp&&m.pfp!=='')
       ? `<img class="member-card-avatar" src="${esc(m.pfp)}" alt="${esc(m.username)}">`
       : `<span class="member-card-emoji">${m.isAdmin?'👑':getEmoji(m.username)}</span>`;
-    return `<div class="member-card" onclick='showUserPopup(${JSON.stringify(m)})'>
+    return `<div class="member-card" onclick="showUserPopup(window._members['${esc(m.username)}'])">
       ${av}
       <div class="member-card-name">${esc(m.username)}</div>
       <div class="member-card-role">${m.isAdmin?'👑 Admin':'🐸 Meme Enjoyer'}</div>
